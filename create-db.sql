@@ -39,46 +39,46 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-CREATE TABLE EMPLOYERS(
+CREATE TABLE Employees(
 	ID                   decimal(18, 0) IDENTITY(1,1) NOT NULL,
 	[1C-ID]              int NULL,
 	LastName             nvarchar(50) NOT NULL,
-	FirstName            nvarchar(50) NULL,
-	MiddleName           nvarchar(50) NULL,
-	EXT                  int NULL,
-	[Login]              nvarchar(50) NULL,
-	Email                nvarchar(50) NULL,
-	Sex                  nvarchar(50) NULL,
-	Dismissed            tinyint NULL,
-	CategoryID           smallint NULL,
-	StartDate            smalldatetime NULL,
+	FirstName            nvarchar(50) NOT NULL,
+	MiddleName           nvarchar(50) NOT NULL,
+	EXT                  int NOT NULL,
+	[Login]              nvarchar(50) NOT NULL,
+	Email                nvarchar(50) NOT NULL,
+	FemaleSex            bit NOT NULL,
+	Fired                bit NOT NULL,
+	CategoryID           smallint NOT NULL,
+	StartDate            smalldatetime NOT NULL,
 	EndDate              smalldatetime NULL,
-	Organization         smallint NULL,
-	Department           smallint NULL,
-	PositionID           smallint NULL,
-	BirthDate            smalldatetime NULL,
-	RegistrationCity     nvarchar(50) NULL,
-	RegistrationAddress  nvarchar(100) NULL,
-	RegistrationArea     nvarchar(50) NULL,
-	RegistrationZipCode  nvarchar(50) NULL,
-	PhoneNumber          nvarchar(50) NULL,
-	PassportSerNum       nvarchar(50) NULL,
-	PassportNumber       nvarchar(50) NULL,
-	PassportGiven        nvarchar(100) NULL,
-	PassportGivenDate    smalldatetime NULL,
-	ForeignPassportExist tinyint NULL,
-	Married              tinyint NULL,
-	MarriedOn            nvarchar(100) NULL,
-	Children             nvarchar(100) NULL,
-	Photo                image NULL,
-	AwardsID             nvarchar(50) NULL,
+	Organization         smallint NOT NULL,
+	Department           smallint NOT NULL,
+	PositionID           smallint NOT NULL,
+	BirthDate            smalldatetime NOT NULL,
+	RegistrationCity     nvarchar(50) NOT NULL,
+	RegistrationAddress  nvarchar(100) NOT NULL,
+	RegistrationArea     nvarchar(50) NOT NULL,
+	RegistrationZipCode  nvarchar(50) NOT NULL,
+	PhoneNumber          nvarchar(50) NOT NULL,
+	PassportSerNum       nvarchar(50) NOT NULL,
+	PassportNumber       nvarchar(50) NOT NULL,
+	PassportGiven        nvarchar(100) NOT NULL,
+	PassportGivenDate    smalldatetime NOT NULL,
+	ForeignPassportExist tinyint NOT NULL,
+	Married              bit NOT NULL,
+	MarriedOn            nvarchar(100) NOT NULL,
+	Children             nvarchar(100) NOT NULL,
+	Photo                image NOT NULL,
+	AwardsID             nvarchar(50) NOT NULL,
  CONSTRAINT PK_EMPLOYERS PRIMARY KEY NONCLUSTERED 
 (
 	ID ASC
 )WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-CREATE CLUSTERED INDEX IX_EMPLOYERS ON EMPLOYERS
+CREATE CLUSTERED INDEX IX_EMPLOYERS ON Employees
 (
 	LastName ASC,
 	FirstName ASC,
@@ -169,7 +169,36 @@ CREATE TABLE ATSLOGS(
 ) ON [PRIMARY]
 GO
 
-SET ANSI_PADDING OFF
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER OFF
+GO
+CREATE VIEW view_Birthdays
+AS
+SELECT     TOP 100 PERCENT *
+FROM         EMPLOYERS
+WHERE     (DATEPART(dy, GETDATE()) - DATEPART(dy, BirthDate) < 1) AND (DATEPART(dy, GETDATE()) - DATEPART(dy, BirthDate) > - 16) OR
+                      (DATEPART(dy, GETDATE()) - DATEPART(dy, BirthDate) > 351)
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER OFF
+GO
+CREATE VIEW view_Awards
+AS
+SELECT     *
+FROM         EMPLOYERS
+WHERE     (AwardsID <> '')
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER OFF
+GO
+CREATE VIEW view_Anniversary
+AS
+SELECT     TOP 100 PERCENT *
+FROM         EMPLOYERS
+WHERE     ((DATEPART(year, GETDATE()) - DATEPART(year, BirthDate)) % 5 = 0)
 GO
 SET ANSI_NULLS ON
 GO
@@ -412,9 +441,307 @@ order by ord
 drop table #DeptStructure
 drop table #TmpID
 GO
-
-ALTER TABLE EMPLOYERS ADD CONSTRAINT DF_EMPLOYERS_CategoryID DEFAULT (2) FOR CategoryID
+SET ANSI_NULLS ON
 GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE Request
+@Fired bit,
+@Women bit,
+@Married bit,
+@Children bit,
+@FIO nvarchar(256)
+AS
+	SET NOCOUNT ON
 
-ALTER TABLE EMPLOYERS ADD CONSTRAINT DF_EMPLOYERS_PositionID DEFAULT (1) FOR PositionID
+	SELECT
+		e.id,
+		FIO=rtrim(e.LastName)+' '+rtrim(e.FirstName)+' '+rtrim(e.MiddleName),
+		e.BirthDate,
+		e.FemaleSex,
+		c.Category,
+		e.StartDate,
+		e.EndDate,
+		o.Org_Name,
+		d.dpt_name,
+		p.post
+	FROM
+		Employees e
+		left join emp_categories c on c.id=e.CategoryID
+		left join organizations o on o.org_id=e.Organization
+		left join departments d on d.dpt_id=e.Department
+		left join posts p on p.post_id=e.PositionID
+	WHERE
+		((@Fired is null) or (@Fired is not null and e.Fired=@Fired)) and
+		((@Women is null) or (@Women is not null and e.FemaleSex=@Women)) and
+		((@Married is null) or (@Married is not null and e.Married=@Married)) and
+		((@Children is null) or (@Children=1 and e.Children not in('','нет')) or (@Children=0 and e.Children in('','нет'))) and
+		((IsNull(@FIO, '')='') or (IsNull(@FIO, '')<>'' and (rtrim(e.LastName)+' '+rtrim(e.FirstName)+' '+rtrim(e.MiddleName)) like '%'+@FIO+'%'))
+	ORDER BY
+		e.LastName,
+		e.FirstName,
+		e.MiddleName
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE QueryNew2m
+AS
+	SET NOCOUNT ON
+
+	SELECT
+		e.ID,
+		FIO=rtrim(e.LastName)+' '+rtrim(e.FirstName)+' '+rtrim(e.MiddleName),
+		e.BirthDate,
+		e.FemaleSex,
+		c.Category,
+		e.StartDate,
+		e.EndDate,
+		o.Org_Name,
+		d.dpt_name,
+		p.post,
+		e.RegistrationCity,
+		e.RegistrationAddress,
+		e.RegistrationArea,
+		e.RegistrationZipCode,
+		e.PhoneNumber,
+		e.Photo,
+		1C-ID,
+		x.Ext,
+		e.Login,
+		e.Email,
+		e.Fired,
+		e.PassportSerNum,
+		e.PassportNumber,
+		e.PassportGiven,
+		e.PassportGivenDate,
+		e.ForeignPassportExist,
+		Mate=case when e.Married=0 then 'íåò' when e.Married=1 then e.MarriedOn else '' end,
+		e.Children,
+		e.AwardsID
+	FROM
+		Employees e
+		left join emp_categories c on c.id=e.CategoryID
+		left join organizations o on o.org_id=e.Organization
+		left join departments d on d.dpt_id=e.Department
+		left join posts p on p.post_id=e.PositionID
+		left join ext x on x.id=e.Ext
+	WHERE
+		e.StartDate>dateadd(month,-2,getdate())
+	ORDER BY
+		e.LastName,e.FirstName,e.MiddleName
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+--Процедура показывает сотрудников, принятых на работу не ранее чем месяц назад
+CREATE PROCEDURE QueryNew1m
+AS
+	SET NOCOUNT ON
+
+	SELECT
+		e.ID,
+		FIO = rtrim(e.LastName)+' '+rtrim(e.FirstName)+' '+rtrim(e.MiddleName),
+		e.BirthDate,
+		e.FemaleSex,
+		c.Category,
+		e.StartDate,
+		e.EndDate,
+		o.Org_Name,
+		d.dpt_name,
+		p.post,
+		e.RegistrationCity,
+		e.RegistrationAddress,
+		e.RegistrationArea,
+		e.RegistrationZipCode,
+		e.PhoneNumber,
+		e.Photo,
+		1C-ID,
+		x.Ext,
+		e.Login,
+		e.Email,
+		e.Fired,
+		e.PassportSerNum,
+		e.PassportNumber,
+		e.PassportGiven,
+		e.PassportGivenDate,
+		e.ForeignPassportExist,
+		Mate=case when e.Married=0 then 'íåò' when e.Married=1 then e.MarriedOn else '' end,
+		e.Children,
+		e.AwardsID
+	from
+		Employees e
+		left join emp_categories c on c.id=e.CategoryID
+		left join organizations o on o.org_id=e.Organization
+		left join departments d on d.dpt_id=e.Department
+		left join posts p on p.post_id=e.PositionID
+		left join ext x on x.id=e.Ext
+	where
+		e.StartDate>dateadd(month,-1,getdate())
+	order by
+		e.LastName,
+		e.FirstName,
+		e.MiddleName
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE QueryFir2m
+AS
+	SET NOCOUNT ON
+
+	SELECT
+		e.ID,
+		FIO=rtrim(e.LastName)+' '+rtrim(e.FirstName)+' '+rtrim(e.MiddleName),
+		e.BirthDate,
+		e.FemaleSex,
+		c.Category,
+		e.StartDate,
+		e.EndDate,
+		o.Org_Name,
+		d.dpt_name,
+		p.post,
+		e.RegistrationCity,
+		e.RegistrationAddress,
+		e.RegistrationArea,
+		e.RegistrationZipCode,
+		e.PhoneNumber,
+		e.Photo,
+		1C-ID,
+		x.Ext,
+		e.Login,
+		e.Email,
+		e.Fired,
+		e.PassportSerNum,
+		e.PassportNumber,
+		e.PassportGiven,
+		e.PassportGivenDate,
+		e.ForeignPassportExist,
+		Mate=case when e.Married=0 then 'íåò' when e.Married=1 then e.MarriedOn else '' end,
+		e.Children,
+		e.AwardsID
+	FROM
+		Employees e
+		left join emp_categories c on c.id=e.CategoryID
+		left join organizations o on o.org_id=e.Organization
+		left join departments d on d.dpt_id=e.Department
+		left join posts p on p.post_id=e.PositionID
+		left join ext x on x.id=e.Ext
+	WHERE
+		e.EndDate>dateadd(month,-2,getdate())
+	ORDER BY
+		e.LastName,
+		e.FirstName,
+		e.MiddleName
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE QueryFir1m
+AS
+	SET NOCOUNT ON
+
+	SELECT
+		e.ID,
+		FIO=rtrim(e.LastName)+' '+rtrim(e.FirstName)+' '+rtrim(e.MiddleName),
+		e.BirthDate,
+		e.FemaleSex,
+		c.Category,
+		e.StartDate,
+		e.EndDate,
+		o.Org_Name,
+		d.dpt_name,
+		p.post,
+		e.RegistrationCity,
+		e.RegistrationAddress,
+		e.RegistrationArea,
+		e.RegistrationZipCode,
+		e.PhoneNumber,
+		e.Photo,
+		1C-ID,
+		x.Ext,
+		e.Login,
+		e.Email,
+		e.Fired,
+		e.PassportSerNum,
+		e.PassportNumber,
+		e.PassportGiven,
+		e.PassportGivenDate,
+		e.ForeignPassportExist,
+		Mate=case when e.Married=0 then 'íåò' when e.Married=1 then e.MarriedOn else '' end,
+		e.Children,
+		e.AwardsID
+	FROM
+		Employees e
+		left join emp_categories c on c.id=e.CategoryID
+		left join organizations o on o.org_id=e.Organization
+		left join departments d on d.dpt_id=e.Department
+		left join posts p on p.post_id=e.PositionID
+		left join ext x on x.id=e.Ext
+	WHERE
+		e.EndDate>dateadd(month,-1,getdate())
+	ORDER BY
+		e.LastName,
+		e.FirstName,
+		e.MiddleName
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE GetEmployee
+@EmployeeID INT
+AS
+	SET NOCOUNT ON
+
+	SELECT
+		FIO=rtrim(e.LastName)+' '+rtrim(e.FirstName)+' '+rtrim(e.MiddleName),
+		e.BirthDate,
+		e.FemaleSex,
+		Sex=CASE WHEN e.FemaleSex=1 THEN 'ж' ELSE 'м' END,
+		c.Category,
+		e.StartDate,
+		e.EndDate,
+		o.Org_Name,
+		d.dpt_name,
+		p.post,
+		e.RegistrationCity,
+		e.RegistrationAddress,
+		e.RegistrationArea,
+		e.RegistrationZipCode,
+		e.PhoneNumber,
+		e.Photo,
+		1C-ID,
+		e.ID,
+		x.Ext,
+		e.Login,
+		e.Email,
+		e.Fired,
+		e.PassportSerNum,
+		e.PassportNumber,
+		e.PassportGiven,
+		e.PassportGivenDate,
+		e.ForeignPassportExist,
+		Mate=case when e.Married=0 then 'нет' when e.Married=1 then e.MarriedOn else '' end,
+		e.Children,
+		e.AwardsID
+	FROM
+		Employees e
+		left join emp_categories c on c.id=e.CategoryID
+		left join organizations o on o.org_id=e.Organization
+		left join departments d on d.dpt_id=e.Department
+		left join posts p on p.post_id=e.PositionID
+		left join ext x on x.id=e.Ext
+	WHERE
+		e.id=@EmployeeID
+GO
+ALTER TABLE Employees ADD CONSTRAINT DF_EMPLOYERS_FemaleSex DEFAULT (0) FOR FemaleSex
+GO
+ALTER TABLE Employees ADD CONSTRAINT DF_EMPLOYERS_CategoryID DEFAULT (2) FOR CategoryID
+GO
+ALTER TABLE Employees ADD CONSTRAINT DF_EMPLOYERS_PositionID DEFAULT (1) FOR PositionID
 GO

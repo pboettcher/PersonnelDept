@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   Db, ADODB, Grids, DBGrids, DBTables, ExtCtrls, Jpeg, PngImage, ToolWin,
   ComCtrls, Menus, StdCtrls, ImgList, WrkDur, Variants, Buttons, Clipbrd,
-  DptList;
+  DptList, TntDBGrids, CustomGrids;
 
 type
   TQueryRec=record
@@ -47,7 +47,7 @@ type
     slDept: TSplitter;
     dsDepStaff: TDataSource;
     aqStaff: TADOQuery;
-    dgStaff: TDBGrid;
+    dgStaff: TAutoSizeDBGrid;
     MainMenu1: TMainMenu;
     miFilt: TMenuItem;
     miFiltAll: TMenuItem;
@@ -75,7 +75,7 @@ type
     pcList: TPageControl;
     tsStaff: TTabSheet;
     tsDepts: TTabSheet;
-    DG: TDBGrid;
+    DG: TAutoSizeDBGrid;
     ToolBar1: TToolBar;
     tbFiltMen: TToolButton;
     tbFiltWomen: TToolButton;
@@ -92,8 +92,8 @@ type
     edFIO: TEdit;
     sbSearch: TSpeedButton;
     tmDelayDStaff: TTimer;
+    spRequest: TADOStoredProc;
     procedure FormCreate(Sender: TObject);
-    procedure AQAfterOpen(DataSet: TDataSet);
     procedure FormShow(Sender: TObject);
     procedure miFiltAllClick(Sender: TObject);
     procedure miFiltNew1monthClick(Sender: TObject);
@@ -125,12 +125,10 @@ type
     FCurrIsFired:boolean;
     FDetailsRow:integer;
     FDeptList:TDeptList;
-    procedure AppMsgHandler(var Msg:TMsg; var Handled:Boolean);
     procedure Req(const Query:string);
     procedure Request;
     procedure ChkMenu(Sender:TObject);
     function ToggleMenu(MI:TObject):boolean;
-    procedure GridAutoWidths;
     procedure LoadDeptInfo(ID:LongInt);
     procedure UpdateDepts;
     procedure ClearDepBranch(Node:TTreeNode);
@@ -147,71 +145,6 @@ var
 implementation
 
 {$R *.DFM}
-
-const
-  QueryNew1m='select e.[ID],FIO=rtrim(e.LastName)+'' ''+rtrim(e.FirstName)+'' ''+rtrim(e.MiddleName),'+
-    'e.BirthDate,e.Sex,c.Category,'+
-    'e.StartDate,e.EndDate,o.Org_Name,d.dpt_name,p.post,e.RegistrationCity,'+
-    'e.RegistrationAddress,e.RegistrationArea,e.RegistrationZipCode,e.PhoneNumber,'+
-    'e.Photo,[1C-ID],x.Ext,e.Login,e.Email,e.Dismissed,e.PassportSerNum,'+
-    'e.PassportNumber,e.PassportGiven,e.PassportGivenDate,e.ForeignPassportExist,'+
-    'Mate=case when e.Married=0 then ''нет'' when e.Married=1 then e.MarriedOn else '''' end,e.Children,e.AwardsID '+
-    'from employers e '+
-    'left join emp_categories c on c.[id]=e.CategoryID '+
-    'left join organizations o on o.org_id=e.Organization '+
-    'left join departments d on d.dpt_id=e.Department '+
-    'left join posts p on p.post_id=e.PositionID '+
-    'left join ext x on x.[id]=e.Ext '+
-    'where e.StartDate>dateadd(month,-1,getdate()) '+
-    'order by e.LastName,e.FirstName,e.MiddleName';
-
-  QueryNew2m='select e.[ID],FIO=rtrim(e.LastName)+'' ''+rtrim(e.FirstName)+'' ''+rtrim(e.MiddleName),'+
-    'e.BirthDate,e.Sex,c.Category,'+
-    'e.StartDate,e.EndDate,o.Org_Name,d.dpt_name,p.post,e.RegistrationCity,'+
-    'e.RegistrationAddress,e.RegistrationArea,e.RegistrationZipCode,e.PhoneNumber,'+
-    'e.Photo,[1C-ID],x.Ext,e.Login,e.Email,e.Dismissed,e.PassportSerNum,'+
-    'e.PassportNumber,e.PassportGiven,e.PassportGivenDate,e.ForeignPassportExist,'+
-    'Mate=case when e.Married=0 then ''нет'' when e.Married=1 then e.MarriedOn else '''' end,e.Children,e.AwardsID '+
-    'from employers e '+
-    'left join emp_categories c on c.[id]=e.CategoryID '+
-    'left join organizations o on o.org_id=e.Organization '+
-    'left join departments d on d.dpt_id=e.Department '+
-    'left join posts p on p.post_id=e.PositionID '+
-    'left join ext x on x.[id]=e.Ext '+
-    'where e.StartDate>dateadd(month,-2,getdate()) '+
-    'order by e.LastName,e.FirstName,e.MiddleName';
-
-  QueryFir1m='select e.[ID],FIO=rtrim(e.LastName)+'' ''+rtrim(e.FirstName)+'' ''+rtrim(e.MiddleName),'+
-    'e.BirthDate,e.Sex,c.Category,'+
-    'e.StartDate,e.EndDate,o.Org_Name,d.dpt_name,p.post,e.RegistrationCity,'+
-    'e.RegistrationAddress,e.RegistrationArea,e.RegistrationZipCode,e.PhoneNumber,'+
-    'e.Photo,[1C-ID],x.Ext,e.Login,e.Email,e.Dismissed,e.PassportSerNum,'+
-    'e.PassportNumber,e.PassportGiven,e.PassportGivenDate,e.ForeignPassportExist,'+
-    'Mate=case when e.Married=0 then ''нет'' when e.Married=1 then e.MarriedOn else '''' end,e.Children,e.AwardsID '+
-    'from employers e '+
-    'left join emp_categories c on c.[id]=e.CategoryID '+
-    'left join organizations o on o.org_id=e.Organization '+
-    'left join departments d on d.dpt_id=e.Department '+
-    'left join posts p on p.post_id=e.PositionID '+
-    'left join ext x on x.[id]=e.Ext '+
-    'where e.EndDate>dateadd(month,-1,getdate()) '+
-    'order by e.LastName,e.FirstName,e.MiddleName';
-
-  QueryFir2m='select e.[ID],FIO=rtrim(e.LastName)+'' ''+rtrim(e.FirstName)+'' ''+rtrim(e.MiddleName),'+
-    'e.BirthDate,e.Sex,c.Category,'+
-    'e.StartDate,e.EndDate,o.Org_Name,d.dpt_name,p.post,e.RegistrationCity,'+
-    'e.RegistrationAddress,e.RegistrationArea,e.RegistrationZipCode,e.PhoneNumber,'+
-    'e.Photo,[1C-ID],x.Ext,e.Login,e.Email,e.Dismissed,e.PassportSerNum,'+
-    'e.PassportNumber,e.PassportGiven,e.PassportGivenDate,e.ForeignPassportExist,'+
-    'Mate=case when e.Married=0 then ''нет'' when e.Married=1 then e.MarriedOn else '''' end,e.Children,e.AwardsID '+
-    'from employers e '+
-    'left join emp_categories c on c.[id]=e.CategoryID '+
-    'left join organizations o on o.org_id=e.Organization '+
-    'left join departments d on d.dpt_id=e.Department '+
-    'left join posts p on p.post_id=e.PositionID '+
-    'left join ext x on x.[id]=e.Ext '+
-    'where e.EndDate>dateadd(month,-2,getdate()) '+
-    'order by e.LastName,e.FirstName,e.MiddleName';
 
 var Clip:TUnicodeClipboard;
 
@@ -235,7 +168,6 @@ begin
   AQ.SQL.Clear;
   AQ.SQL.Add(Query);
   AQ.Open;
-  GridAutoWidths;
   DG.DataSource:=DS;
   DG.Color:=clWindow;
   SG.Color:=clWindow;
@@ -256,41 +188,13 @@ begin
   {$I+}
 end;
 
-procedure TForm1.Request;
-var Q,C:string;
+function DoubleSwitch(TrueSwitch, FalseSwitch:boolean):OleVariant;
 begin
-  Q:='select e.[id],FIO=rtrim(e.LastName)+'' ''+rtrim(e.FirstName)+'' ''+'+
-    'rtrim(e.MiddleName),e.BirthDate,e.Sex,c.Category,e.StartDate,e.EndDate,'+
-    'o.Org_Name,d.dpt_name,p.post '+
-    'from employers e '+
-    'left join emp_categories c on c.[id]=e.CategoryID '+
-    'left join organizations o on o.org_id=e.Organization '+
-    'left join departments d on d.dpt_id=e.Department '+
-    'left join posts p on p.post_id=e.PositionID';
-  C:='';
-  if not(FRec.Fired or FRec.Working) then C:=C+' and 1=0';
-  if FRec.Fired and not FRec.Working then C:=C+' and e.dismissed=1';
-  if not FRec.Fired and FRec.Working then C:=C+' and e.dismissed=0';
-  if not(FRec.Men or FRec.Women) then C:=C+' and 1=0';
-  if FRec.Men and not FRec.Women then C:=C+' and e.sex=''м''';
-  if not FRec.Men and FRec.Women then C:=C+' and e.sex=''ж''';
-  if not(FRec.Married or FRec.Unmarried) then C:=C+' and 1=0';
-  if FRec.Married and not FRec.Unmarried then C:=C+' and e.married=1';
-  if not FRec.Married and FRec.Unmarried then C:=C+' and e.married=0';
-  if not(FRec.Children or FRec.NoChildren) then C:=C+' and 1=0';
-  if FRec.Children and not FRec.NoChildren then C:=C+' and e.Children not in('''',''нет'')';
-  if not FRec.Children and FRec.NoChildren then C:=C+' and e.Children in('''',''нет'')';
-  if FRec.FIO<>'' then C:=C+' and (rtrim(e.LastName)+'' ''+rtrim(e.FirstName)+'' ''+rtrim(e.MiddleName)) like ''%'+FRec.FIO+'%''';
-  //'and e.birthdate>''1970-01-01'''+
-  if C<>'' then begin
-    if Copy(C,1,5)=' and ' then C:=Copy(C,5,Length(C)-4);
-    Q:=Q+' where'+C;
-  end;
-  Q:=Q+' order by e.LastName,e.FirstName,e.MiddleName';
-  {FRec.YearsOld:=0;
-  FRec.StartDate:=0;
-  FRec.EndDate:=0;}
-  //WriteStrToFile('query.txt',Q);
+  if (TrueSwitch=FalseSwitch) then Result:=null else Result:=TrueSwitch;
+end;
+
+procedure TForm1.Request;
+begin
   miFiltWorking.Checked:=FRec.Working;
   tbFiltWorking.Down:=FRec.Working;
   miFiltFired.Checked:=FRec.Fired;
@@ -307,7 +211,20 @@ begin
   tbFiltChildren.Down:=FRec.Children;
   miFiltNoChildren.Checked:=FRec.NoChildren;
   tbFiltNoChildren.Down:=FRec.NoChildren;
-  Req(Q);
+  try
+    spRequest.Close;
+    with spRequest.Parameters do begin
+      ParamValues['@Fired']:=DoubleSwitch(FRec.Fired, FRec.Working);
+      ParamValues['@Women']:=DoubleSwitch(FRec.Women, FRec.Men);
+      ParamValues['@Married']:=DoubleSwitch(FRec.Married, FRec.Unmarried);
+      ParamValues['@Children']:=DoubleSwitch(FRec.Children, FRec.NoChildren);
+      ParamValues['@FIO']:=edFIO.Text;
+    end;
+    spRequest.Open;
+    DS.DataSet:=spRequest;
+    DG.DataSource:=DS;
+  finally
+  end;
 end;
 
 procedure TForm1.ChkMenu(Sender:TObject);
@@ -318,31 +235,10 @@ begin
   if Sender is TMenuItem then TMenuItem(Sender).Checked:=True;
 end;
 
-procedure TForm1.AppMsgHandler(var Msg:TMsg; var Handled:Boolean);
-var i:SmallInt;
-begin
-  if Msg.message=WM_MOUSEWHEEL then begin
-    Msg.message:=WM_KEYDOWN;
-    Msg.lParam:=0;
-    i:=HiWord(Msg.wParam);
-    if i>0 then Msg.wParam:=VK_UP
-      else Msg.wParam:=VK_DOWN;
-    Handled:=False;
-  end;
-end;
-
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   FShowPhoto:=False;
   FDeptList:=TDeptList.Create;
-end;
-
-procedure TForm1.AQAfterOpen(DataSet: TDataSet);
-var i:integer;
-begin
-  for i:=0 to DG.Columns.Count-1 do begin
-    DG.Columns[i].Width:=100;
-  end;
 end;
 
 function SF(DS:TDataSet; FName:string):string;
@@ -371,20 +267,7 @@ begin
   D:=TADOQuery.Create(Self);
   D.Connection:=Conn;
   D.SQL.Clear;
-  D.SQL.Add('select FIO=rtrim(e.LastName)+'' ''+rtrim(e.FirstName)+'' ''+rtrim(e.MiddleName),'+
-    'e.BirthDate,e.Sex,c.Category,'+
-    'e.StartDate,e.EndDate,o.Org_Name,d.dpt_name,p.post,e.RegistrationCity,'+
-    'e.RegistrationAddress,e.RegistrationArea,e.RegistrationZipCode,e.PhoneNumber,'+
-    'e.Photo,[1C-ID],e.[ID],x.Ext,e.Login,e.Email,e.Dismissed,e.PassportSerNum,'+
-    'e.PassportNumber,e.PassportGiven,e.PassportGivenDate,e.ForeignPassportExist,'+
-    'Mate=case when e.Married=0 then ''нет'' when e.Married=1 then e.MarriedOn else '''' end,e.Children,e.AwardsID '+
-    'from employers e '+
-    'left join emp_categories c on c.[id]=e.CategoryID '+
-    'left join organizations o on o.org_id=e.Organization '+
-    'left join departments d on d.dpt_id=e.Department '+
-    'left join posts p on p.post_id=e.PositionID '+
-    'left join ext x on x.[id]=e.Ext '+
-    'where e.[id]='+IntToStr(ID));
+  D.SQL.Add('GetEmployee '+IntToStr(ID));
   D.Open;
   if not D.Eof then begin
   PF:=TBLOBField(D.FieldByName('Photo'));
@@ -420,8 +303,6 @@ begin
     BS.Free;
   end;
   SG.Cells[1,0]:=SF(D,'FIO');
-  {s:=SF(D,'FIO');
-  showmessage(s);}
   if D.FieldByName('BirthDate').IsNull then SG.Cells[1,1]:='' else begin
     Age:=IntToStr(Trunc((Now-D.FieldByName('BirthDate').AsDateTime)/365.25));
     SG.Cells[1,1]:=SF(D,'BirthDate')+' ('+Age+')';
@@ -454,7 +335,6 @@ end;
 
 procedure TForm1.FormShow(Sender: TObject);
 begin
-  Application.OnMessage:=AppMsgHandler;
   SG.RowCount:=15;
   SG.ColWidths[1]:=500;
   SG.Cells[0,0]:='Ф.И.О.';
@@ -502,25 +382,25 @@ end;
 procedure TForm1.miFiltNew1monthClick(Sender: TObject);
 begin
   ChkMenu(Sender);
-  Req(QueryNew1m);
+  Req('QueryNew1m');
 end;
 
 procedure TForm1.miFiltNew2monthsClick(Sender: TObject);
 begin
   ChkMenu(Sender);
-  Req(QueryNew2m);
+  Req('QueryNew2m');
 end;
 
 procedure TForm1.miFiltFired1mClick(Sender: TObject);
 begin
   ChkMenu(Sender);
-  Req(QueryFir1m);
+  Req('QueryFir1m');
 end;
 
 procedure TForm1.miFiltFired2mClick(Sender: TObject);
 begin
   ChkMenu(Sender);
-  Req(QueryFir2m);
+  Req('QueryFir2m');
 end;
 
 function TForm1.ToggleMenu(MI:TObject):boolean;
@@ -573,35 +453,6 @@ begin
     Inc(Rect.Left,2);
     DrawText(SG.Canvas.Handle,PChar(Txt),-1,Rect,DT_LEFT or DT_VCENTER);
   end;
-end;
-
-procedure TForm1.GridAutoWidths;
-var RN:integer;
-    D:TDataSet;
-    i,CC{,W}:integer;
-    DC:HDC;
-    TS:TSize;
-    Txt:string;
-    CW:array of integer;
-begin
-  D:=DS.DataSet;
-  RN:=D.RecNo;
-  D.First;
-  CC:=DG.Columns.Count;
-  SetLength(CW,CC);
-  for i:=0 to CC-1 do CW[i]:=20;
-  DC:=DG.Canvas.Handle;
-  while not D.Eof do begin
-    for i:=0 to CC-1 do begin
-      Txt:=D.FieldByName(DG.Columns[i].FieldName).AsString;
-      GetTextExtentPoint(DC,PChar(Txt),Length(Txt),TS);
-      if TS.cx>CW[i] then CW[i]:=TS.cx;
-    end;
-    D.Next;
-  end;
-  for i:=0 to DG.Columns.Count-1 do DG.Columns[i].Width:=CW[i]+10;
-  Finalize(CW);
-  D.RecNo:=RN;
 end;
 
 procedure TForm1.miWrkDurClick(Sender: TObject);

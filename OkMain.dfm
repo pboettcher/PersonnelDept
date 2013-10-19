@@ -121,12 +121,124 @@ object Form1: TForm1
     OnChange = pcListChange
     object tsStaff: TTabSheet
       Caption = #1057#1086#1090#1088#1091#1076#1085#1080#1082#1080
-      object DG: TDBGrid
+      object DG: TAutoSizeDBGrid
         Left = 0
         Top = 29
         Width = 543
         Height = 180
         Align = alClient
+        Color = clWindow
+        Columns = <
+          item
+            Expanded = False
+            FieldName = 'FIO'
+            Title.Caption = #1060'.'#1048'.'#1054'.'
+            Title.Caption_UTF7 = '+BCQ.+BBg.+BB4.'
+            Width = 46
+            Visible = True
+            AutoSizeKind = akCommon
+            WidthPercent = 20
+            FitRestSpace = False
+            SortMarker = smNone
+          end
+          item
+            Expanded = False
+            FieldName = 'BirthDate'
+            Title.Caption = #1044#1072#1090#1072' '#1088#1086#1078#1076#1077#1085#1080#1103
+            Title.Caption_UTF7 = '+BBQEMARCBDA +BEAEPgQ2BDQENQQ9BDgETw'
+            Width = 89
+            Visible = True
+            AutoSizeKind = akCommon
+            WidthPercent = 20
+            FitRestSpace = False
+            SortMarker = smNone
+          end
+          item
+            Expanded = False
+            FieldName = 'Sex'
+            Title.Caption = #1055#1086#1083
+            Title.Caption_UTF7 = '+BB8EPgQ7'
+            Width = 30
+            Visible = True
+            AutoSizeKind = akCommon
+            WidthPercent = 20
+            FitRestSpace = False
+            SortMarker = smNone
+          end
+          item
+            Expanded = False
+            FieldName = 'Category'
+            Title.Caption = #1050#1072#1090#1077#1075#1086#1088#1080#1103
+            Title.Caption_UTF7 = '+BBoEMARCBDUEMwQ+BEAEOARP'
+            Width = 63
+            Visible = True
+            AutoSizeKind = akCommon
+            WidthPercent = 20
+            FitRestSpace = False
+            SortMarker = smNone
+          end
+          item
+            Expanded = False
+            FieldName = 'StartDate'
+            Title.Caption = #1044#1072#1090#1072' '#1087#1086#1089#1090#1091#1087#1083#1077#1085#1080#1103' '#1085#1072' '#1088#1072#1073#1086#1090#1091
+            Title.Caption_UTF7 =
+              '+BBQEMARCBDA +BD8EPgRBBEIEQwQ/BDsENQQ9BDgETw +BD0EMA +BEAEMAQxBD' +
+              '4EQgRD'
+            Width = 155
+            Visible = True
+            AutoSizeKind = akCommon
+            WidthPercent = 20
+            FitRestSpace = False
+            SortMarker = smNone
+          end
+          item
+            Expanded = False
+            FieldName = 'EndDate'
+            Title.Caption = #1044#1072#1090#1072' '#1091#1074#1086#1083#1100#1085#1077#1085#1080#1103
+            Title.Caption_UTF7 = '+BBQEMARCBDA +BEMEMgQ+BDsETAQ9BDUEPQQ4BE8'
+            Width = 98
+            Visible = True
+            AutoSizeKind = akCommon
+            WidthPercent = 20
+            FitRestSpace = False
+            SortMarker = smNone
+          end
+          item
+            Expanded = False
+            FieldName = 'Org_Name'
+            Title.Caption = #1054#1088#1075#1088#1072#1085#1080#1079#1072#1094#1080#1103
+            Title.Caption_UTF7 = '+BB4EQAQzBEAEMAQ9BDgENwQwBEYEOARP'
+            Width = 83
+            Visible = True
+            AutoSizeKind = akCommon
+            WidthPercent = 20
+            FitRestSpace = False
+            SortMarker = smNone
+          end
+          item
+            Expanded = False
+            FieldName = 'dpt_name'
+            Title.Caption = #1055#1086#1076#1088#1072#1079#1076#1077#1083#1077#1085#1080#1077
+            Title.Caption_UTF7 = '+BB8EPgQ0BEAEMAQ3BDQENQQ7BDUEPQQ4BDU'
+            Width = 90
+            Visible = True
+            AutoSizeKind = akCommon
+            WidthPercent = 20
+            FitRestSpace = False
+            SortMarker = smNone
+          end
+          item
+            Expanded = False
+            FieldName = 'post'
+            Title.Caption = #1044#1086#1083#1078#1085#1086#1089#1090#1100
+            Title.Caption_UTF7 = '+BBQEPgQ7BDYEPQQ+BEEEQgRM'
+            Width = 68
+            Visible = True
+            AutoSizeKind = akCommon
+            WidthPercent = 20
+            FitRestSpace = False
+            SortMarker = smNone
+          end>
         DataSource = DS
         Options = [dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgRowSelect, dgConfirmDelete, dgCancelOnExit]
         TabOrder = 0
@@ -135,60 +247,119 @@ object Form1: TForm1
         TitleFont.Height = -11
         TitleFont.Name = 'MS Sans Serif'
         TitleFont.Style = []
+        InactiveColor = clBtnFace
+        AutoSizeKind = gaFullWidth
+        ManualAutoSize = False
         Columns = <
           item
             Expanded = False
             FieldName = 'FIO'
             Title.Caption = #1060'.'#1048'.'#1054'.'
+            Title.Caption_UTF7 = '+BCQ.+BBg.+BB4.'
+            Width = 46
             Visible = True
+            AutoSizeKind = akCommon
+            WidthPercent = 20
+            FitRestSpace = False
+            SortMarker = smNone
           end
           item
             Expanded = False
             FieldName = 'BirthDate'
             Title.Caption = #1044#1072#1090#1072' '#1088#1086#1078#1076#1077#1085#1080#1103
+            Title.Caption_UTF7 = '+BBQEMARCBDA +BEAEPgQ2BDQENQQ9BDgETw'
+            Width = 89
             Visible = True
+            AutoSizeKind = akCommon
+            WidthPercent = 20
+            FitRestSpace = False
+            SortMarker = smNone
           end
           item
             Expanded = False
             FieldName = 'Sex'
             Title.Caption = #1055#1086#1083
+            Title.Caption_UTF7 = '+BB8EPgQ7'
+            Width = 30
             Visible = True
+            AutoSizeKind = akCommon
+            WidthPercent = 20
+            FitRestSpace = False
+            SortMarker = smNone
           end
           item
             Expanded = False
             FieldName = 'Category'
             Title.Caption = #1050#1072#1090#1077#1075#1086#1088#1080#1103
+            Title.Caption_UTF7 = '+BBoEMARCBDUEMwQ+BEAEOARP'
+            Width = 63
             Visible = True
+            AutoSizeKind = akCommon
+            WidthPercent = 20
+            FitRestSpace = False
+            SortMarker = smNone
           end
           item
             Expanded = False
             FieldName = 'StartDate'
             Title.Caption = #1044#1072#1090#1072' '#1087#1086#1089#1090#1091#1087#1083#1077#1085#1080#1103' '#1085#1072' '#1088#1072#1073#1086#1090#1091
+            Title.Caption_UTF7 =
+              '+BBQEMARCBDA +BD8EPgRBBEIEQwQ/BDsENQQ9BDgETw +BD0EMA +BEAEMAQxBD' +
+              '4EQgRD'
+            Width = 155
             Visible = True
+            AutoSizeKind = akCommon
+            WidthPercent = 20
+            FitRestSpace = False
+            SortMarker = smNone
           end
           item
             Expanded = False
             FieldName = 'EndDate'
             Title.Caption = #1044#1072#1090#1072' '#1091#1074#1086#1083#1100#1085#1077#1085#1080#1103
+            Title.Caption_UTF7 = '+BBQEMARCBDA +BEMEMgQ+BDsETAQ9BDUEPQQ4BE8'
+            Width = 98
             Visible = True
+            AutoSizeKind = akCommon
+            WidthPercent = 20
+            FitRestSpace = False
+            SortMarker = smNone
           end
           item
             Expanded = False
             FieldName = 'Org_Name'
             Title.Caption = #1054#1088#1075#1088#1072#1085#1080#1079#1072#1094#1080#1103
+            Title.Caption_UTF7 = '+BB4EQAQzBEAEMAQ9BDgENwQwBEYEOARP'
+            Width = 83
             Visible = True
+            AutoSizeKind = akCommon
+            WidthPercent = 20
+            FitRestSpace = False
+            SortMarker = smNone
           end
           item
             Expanded = False
             FieldName = 'dpt_name'
             Title.Caption = #1055#1086#1076#1088#1072#1079#1076#1077#1083#1077#1085#1080#1077
+            Title.Caption_UTF7 = '+BB8EPgQ0BEAEMAQ3BDQENQQ7BDUEPQQ4BDU'
+            Width = 90
             Visible = True
+            AutoSizeKind = akCommon
+            WidthPercent = 20
+            FitRestSpace = False
+            SortMarker = smNone
           end
           item
             Expanded = False
             FieldName = 'post'
             Title.Caption = #1044#1086#1083#1078#1085#1086#1089#1090#1100
+            Title.Caption_UTF7 = '+BBQEPgQ7BDYEPQQ+BEEEQgRM'
+            Width = 68
             Visible = True
+            AutoSizeKind = akCommon
+            WidthPercent = 20
+            FitRestSpace = False
+            SortMarker = smNone
           end>
       end
       object ToolBar1: TToolBar
@@ -360,12 +531,49 @@ object Form1: TForm1
         TabOrder = 0
         OnChange = tvDeptChange
       end
-      object dgStaff: TDBGrid
+      object dgStaff: TAutoSizeDBGrid
         Left = 309
         Top = 0
         Width = 234
         Height = 209
         Align = alClient
+        Color = clWindow
+        Columns = <
+          item
+            Expanded = False
+            FieldName = 'FIO'
+            Title.Caption = #1057#1086#1090#1088#1091#1076#1085#1080#1082
+            Title.Caption_UTF7 = '+BCEEPgRCBEAEQwQ0BD0EOAQ6'
+            Width = 96
+            Visible = True
+            AutoSizeKind = akCommon
+            WidthPercent = 20
+            FitRestSpace = False
+            SortMarker = smNone
+          end
+          item
+            Expanded = False
+            FieldName = 'Pos'
+            Title.Caption = #1044#1086#1083#1078#1085#1086#1089#1090#1100
+            Title.Caption_UTF7 = '+BBQEPgQ7BDYEPQQ+BEEEQgRM'
+            Width = 105
+            Visible = True
+            AutoSizeKind = akCommon
+            WidthPercent = 20
+            FitRestSpace = False
+            SortMarker = smNone
+          end
+          item
+            Expanded = False
+            FieldName = 'Org'
+            Title.Caption = #1054#1088#1075#1072#1085#1080#1079#1072#1094#1080#1103
+            Title.Caption_UTF7 = '+BB4EQAQzBDAEPQQ4BDcEMARGBDgETw'
+            Visible = True
+            AutoSizeKind = akCommon
+            WidthPercent = 20
+            FitRestSpace = False
+            SortMarker = smNone
+          end>
         DataSource = dsDepStaff
         Options = [dgTitles, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgRowSelect, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
         ReadOnly = True
@@ -375,26 +583,44 @@ object Form1: TForm1
         TitleFont.Height = -11
         TitleFont.Name = 'MS Sans Serif'
         TitleFont.Style = []
+        InactiveColor = clBtnFace
+        AutoSizeKind = gaFixed
+        ManualAutoSize = False
         Columns = <
           item
             Expanded = False
             FieldName = 'FIO'
             Title.Caption = #1057#1086#1090#1088#1091#1076#1085#1080#1082
+            Title.Caption_UTF7 = '+BCEEPgRCBEAEQwQ0BD0EOAQ6'
             Width = 96
             Visible = True
+            AutoSizeKind = akCommon
+            WidthPercent = 20
+            FitRestSpace = False
+            SortMarker = smNone
           end
           item
             Expanded = False
             FieldName = 'Pos'
             Title.Caption = #1044#1086#1083#1078#1085#1086#1089#1090#1100
+            Title.Caption_UTF7 = '+BBQEPgQ7BDYEPQQ+BEEEQgRM'
             Width = 105
             Visible = True
+            AutoSizeKind = akCommon
+            WidthPercent = 20
+            FitRestSpace = False
+            SortMarker = smNone
           end
           item
             Expanded = False
             FieldName = 'Org'
             Title.Caption = #1054#1088#1075#1072#1085#1080#1079#1072#1094#1080#1103
+            Title.Caption_UTF7 = '+BB4EQAQzBDAEPQQ4BDcEMARGBDgETw'
             Visible = True
+            AutoSizeKind = akCommon
+            WidthPercent = 20
+            FitRestSpace = False
+            SortMarker = smNone
           end>
       end
     end
@@ -433,7 +659,6 @@ object Form1: TForm1
   end
   object AQ: TADOQuery
     Connection = Conn
-    AfterOpen = AQAfterOpen
     Parameters = <>
     SQL.Strings = (
       'select top 1 * from employers')
@@ -946,5 +1171,50 @@ object Form1: TForm1
     OnTimer = tmDelayDStaffTimer
     Left = 395
     Top = 135
+  end
+  object spRequest: TADOStoredProc
+    Connection = Conn
+    ProcedureName = 'Request'
+    Parameters = <
+      item
+        Name = '@RETURN_VALUE'
+        DataType = ftInteger
+        Direction = pdReturnValue
+        Precision = 10
+        Value = Null
+      end
+      item
+        Name = '@Fired'
+        Attributes = [paNullable]
+        DataType = ftBoolean
+        Value = Null
+      end
+      item
+        Name = '@Women'
+        Attributes = [paNullable]
+        DataType = ftBoolean
+        Value = Null
+      end
+      item
+        Name = '@Married'
+        Attributes = [paNullable]
+        DataType = ftBoolean
+        Value = Null
+      end
+      item
+        Name = '@Children'
+        Attributes = [paNullable]
+        DataType = ftBoolean
+        Value = Null
+      end
+      item
+        Name = '@FIO'
+        Attributes = [paNullable]
+        DataType = ftVarBytes
+        Size = 512
+        Value = 'null'
+      end>
+    Left = 290
+    Top = 125
   end
 end
